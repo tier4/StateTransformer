@@ -207,14 +207,14 @@ def main():
         if model_args.camera_image_encoder is not None:
             val_dataset = val_dataset.filter(lambda example: len(example["images_path"]) == 8, num_proc=mp.cpu_count())
 
-    val14_1k_dataset = None
+    val_141k_dataset = None
     if training_args.do_sim_val:
-        # load val14_1k dataset for sim_val, 1118 samples in total
-        assert 'val14_1k' in root_folders, f'No val14_1k dataset found in {root_folders}, cannot do sim_val'
-        val14_1k_dataset = load_dataset(index_root, "val14_1k", data_args.dataset_scale, data_args.agent_type, False)
+        # load val_141k dataset for sim_val, 1118 samples in total
+        assert 'val_141k' in root_folders, f'No val_141k dataset found in {root_folders}, cannot do sim_val'
+        val_141k_dataset = load_dataset(index_root, "val_141k", data_args.dataset_scale, data_args.agent_type, False)
     elif training_args.do_sim_test:
         assert 'test' in root_folders, f'No test dataset found in {root_folders}, cannot do sim_test'
-        val14_1k_dataset = load_dataset(index_root, "test_hard14_index", data_args.dataset_scale, data_args.agent_type, False)
+        val_141k_dataset = load_dataset(index_root, "test_hard14_index", data_args.dataset_scale, data_args.agent_type, False)
 
 
     # clean image folders
@@ -298,7 +298,7 @@ def main():
                 all_maps_dic[map_name] = map_dic
 
     # loop split info and update for test set
-    logger.info('TrainingSet: '+ str(train_dataset) + '\nValidationSet: ' + str(val_dataset) + '\nTestingSet: ' + str(test_dataset) + '\nSimulationSet: ' + str(val14_1k_dataset))
+    logger.info('TrainingSet: '+ str(train_dataset) + '\nValidationSet: ' + str(val_dataset) + '\nTestingSet: ' + str(test_dataset) + '\nSimulationSet: ' + str(val_141k_dataset))
 
     dataset_dict = dict(
         train=train_dataset.shuffle(seed=training_args.seed),
@@ -345,13 +345,13 @@ def main():
     if model_args.finetuning_with_simulation_on_val:
         logger.warning('Finetuning with simulation on val set!!')
         assert training_args.do_sim_val, 'do_sim_val must be set to True to finetune with simulation on val set'
-        assert val14_1k_dataset is not None, 'No val14_1k dataset found, cannot finetune with simulation on val set'
-        train_dataset = copy.deepcopy(val14_1k_dataset)
+        assert val_141k_dataset is not None, 'No val_141k dataset found, cannot finetune with simulation on val set'
+        train_dataset = copy.deepcopy(val_141k_dataset)
 
     if training_args.do_sim_val or training_args.do_sim_test:
         if data_args.max_sim_samples is not None:
-            max_sim_samples = min(len(val14_1k_dataset), data_args.max_sim_samples)
-            val14_1k_dataset = val14_1k_dataset.select(range(max_sim_samples))
+            max_sim_samples = min(len(val_141k_dataset), data_args.max_sim_samples)
+            val_141k_dataset = val_141k_dataset.select(range(max_sim_samples))
 
     # Initialize our Trainer
     if model_args.task == "nuplan":
@@ -418,7 +418,7 @@ def main():
     model.data_collator = trainer.data_collator
 
     if training_args.do_sim_val or training_args.do_sim_test:
-        trainer.val14_1k_dataset = val14_1k_dataset
+        trainer.val_141k_dataset = val_141k_dataset
         # check lagitimacy of simulation steps if not None
         if training_args.sim_steps is not None:
             assert training_args.sim_steps % training_args.eval_steps == 0, f'simulation_steps must be divisible by eval_steps {training_args.simulation_steps} {training_args.eval_steps}'

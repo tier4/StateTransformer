@@ -105,7 +105,7 @@ def static_coor_rasterize(sample, data_path, raster_shape=(224, 224),
     map = sample["map"]
     split = sample["split"]
 
-    if split == 'val14_1k':
+    if split == 'val_141k':
         split = 'val'
     elif split == 'test_hard14_index':
         split = 'test'
@@ -318,7 +318,7 @@ def static_coor_rasterize(sample, data_path, raster_shape=(224, 224),
                               np.zeros(ego_poses.shape[0]), ego_poses[:, -1]]).transpose((1, 0))
     rotated_poses[:, 1] *= y_inverse
 
-    if kwargs.get('use_speed', True):
+    if kwargs.get('use_speed', True) and False:
         # speed, old data dic does not have speed key
         speed = agent_dic['ego']['speed']  # v, a, angular_v
         if speed.shape[0] == ego_poses.shape[0] * 2:
@@ -550,7 +550,7 @@ def load_data(sample, data_path, all_maps_dic=None) -> dict:
     split = sample["split"]
     frame_id = sample["frame_id"]  # current frame of this sample
 
-    if split == 'val14_1k':
+    if split == 'val_141k':
         split = 'val'
     elif split == 'test_hard14_index':
         split = 'test'
@@ -886,7 +886,7 @@ def autoregressive_rasterize(sample, data_path, raster_shape=(224, 224),
     map = sample["map"]
     split = sample["split"]
 
-    if split == 'val14_1k':
+    if split == 'val_141k':
         split = 'val'
     elif split == 'test_hard14_index':
         split = 'test'

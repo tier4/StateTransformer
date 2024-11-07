@@ -544,10 +544,10 @@ class PlanningTrainer(Trainer):
                 raise NotImplementedError('Not implemented yet for autoregressive generations')
             # TODO: separate the simulation from evaluation loop
             if self.args.sim_steps is None or self.state.global_step % self.args.sim_steps == 0:
-                val14_1k_dataset = self.val14_1k_dataset
-                val14_1k_dataloader = self.get_eval_dataloader(val14_1k_dataset)
+                val_141k_dataset = self.val_141k_dataset
+                val_141k_dataloader = self.get_eval_dataloader(val_141k_dataset)
                 sim_output = eval_loop(
-                    val14_1k_dataloader,
+                    val_141k_dataloader,
                     description='CL-Simulation Evaluation',
                     prediction_loss_only=True if self.compute_metrics is None else None,
                     ignore_keys=ignore_keys,
@@ -620,7 +620,7 @@ class PlanningTrainer(Trainer):
             return None, None, None
 
         # if val14, run closed loop simulation instead
-        if inputs['split'][0] == 'val14_1k':
+        if inputs['split'][0] == 'val_141k':
             overall_score_dic = self.do_closed_loop_simulation(inputs)
             loss = torch.tensor(0, device=self.model.device)
             logits_dict = overall_score_dic

@@ -16,3 +16,7 @@ tuplan_garage/nuplan-devkit/
 tuplan_garage/planning/script/config/common/scenario_filter/val14_split_1.yaml
 tuplan_garage/planning/script/config/common/scenario_filter/val14_split_2.yaml
 tuplan_garage/planning/script/config/common/scenario_filter/val14_split_3.yaml
+checkpoints/
+outputs/
+logs/
+*.log
