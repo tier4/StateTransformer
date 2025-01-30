@@ -1,12 +1,12 @@
 #!/bin/bash
 
-export PATH_TO_DATASET_FOLDER=/home/kai.yamashita/projects/datasets/nuplan-v1.1_STR_2
+export PATH_TO_DATASET_FOLDER=/data/tieriv/dataset/STR/nuplan-v1.1_STR_2
 export PATH_TO_OUTPUT_FOLDER=/home/kai.yamashita/projects/StateTransformer/outputs
 export PATH_TO_LOG_FOLDER=/home/kai.yamashita/projects/StateTransformer/logs
 export MODEL_NAME=scratch-mixtral-800m-deep
 export EXPERIMENT_NAME=STR2_${MODEL_NAME}
 
-CUDA_VISIBLE_DEVICES=1,2 python analyze_data.py \
+singularity exec python analyze_data.py \
 --model_name $MODEL_NAME \
 --model_pretrain_name_or_path None \
 --saved_dataset_folder ${PATH_TO_DATASET_FOLDER} \
@@ -39,7 +39,6 @@ CUDA_VISIBLE_DEVICES=1,2 python analyze_data.py \
 --vit_intermediate_size 768 \
 --lr_scheduler_type cosine_with_restarts \
 --num_cycles 10 \
---use_speed \
 --use_key_points specified_backward \
 --augment_current_pose_rate 0.5 \
 --augment_current_with_past_linear_changes True \

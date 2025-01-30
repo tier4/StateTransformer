@@ -106,6 +106,7 @@ class NuplanRasterizeEncoder(TrajectoryEncoder):
 
         # separate key point encoder is hard to train with larger models due to sparse signals
         input_dim = 7 if self.config.use_speed else 4
+        input_dim = 4
         self.action_m_embed = nn.Sequential(nn.Linear(input_dim, action_kwargs.get("d_embed")), nn.Tanh())
         self.action_m_embed_traj = nn.Sequential(nn.Linear(4, action_kwargs.get("d_embed")), nn.Tanh())
 

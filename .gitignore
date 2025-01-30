@@ -20,3 +20,10 @@ checkpoints/
 outputs/
 logs/
 *.log
+*.planning
+*.out
+*.png
+*.sif
+*.pkl
+
+outputs*

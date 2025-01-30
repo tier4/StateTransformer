@@ -90,7 +90,7 @@ class ModelArguments:
     )
     ######## end of speed args ########
     use_speed: Optional[bool] = field(
-        default=True
+        default=False
     )
     ######## begin of key points args ########
     use_key_points: Optional[str] = field(

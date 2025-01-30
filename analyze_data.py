@@ -61,30 +61,30 @@ def main():
 
     index_root = os.path.join(data_args.saved_dataset_folder, 'index')
 
-    test_dataset = load_dataset(index_root, "test", data_args.dataset_scale, data_args.agent_type, False)
+    # test_dataset = load_dataset(index_root, "test", data_args.dataset_scale, data_args.agent_type, False)
 
-    test_dataloader = DataLoader(
-                dataset=test_dataset,
-                batch_size=1, 
-                pin_memory=True,
-                drop_last=True
-            )
+    # test_dataloader = DataLoader(
+    #             dataset=test_dataset,
+    #             batch_size=1, 
+    #             pin_memory=True,
+    #             drop_last=True
+    #         )
     
-    sample_batch = next(iter(test_dataloader))
+    # sample_batch = next(iter(test_dataloader))
     
-    with open("before_collate.pkl", 'wb') as f:
-        pickle.dump(sample_batch, f)
+    # with open("before_collate.pkl", 'wb') as f:
+    #     pickle.dump(sample_batch, f)
     
-    print("Now before_collate Log")
-    for key, value in sample_batch.items():
-        print("*" * 300)
-        print("Key:", key)
-        if hasattr(value, "shape"):
-            print("Value Shape:", value.shape)
-        else:
-            print("Value", value)
-        print("*" * 300)
-    print("-" * 500)
+    # print("Now before_collate Log")
+    # for key, value in sample_batch.items():
+    #     print("*" * 300)
+    #     print("Key:", key)
+    #     if hasattr(value, "shape"):
+    #         print("Value Shape:", value.shape)
+    #     else:
+    #         print("Value", value)
+    #     print("*" * 300)
+    # print("-" * 500)
 
     from transformer4planning.preprocess.nuplan_rasterize import nuplan_rasterize_collate_func
     collate_fn = partial(nuplan_rasterize_collate_func,
@@ -101,20 +101,26 @@ def main():
             )
     
     sample_batch = next(iter(test_dataloader))
+    for each_key in sample_batch.keys():
+                    if isinstance(sample_batch[each_key], type(torch.tensor(0))):
+                        sample_batch[each_key] = sample_batch[each_key].to("cuda")
 
-    with open("after_collate.pkl", 'wb') as f:
-        pickle.dump(sample_batch, f)
+    model = build_models(model_args)
+    traj_pred = model.generate(**sample_batch)
 
-    print("Now after_collate Log")
-    for key, value in sample_batch.items():
-        print("*" * 300)
-        print("Key:", key)
-        if hasattr(value, "shape"):
-            print("Value Shape:", value.shape)
-        else:
-            print("Value", value)
-        print("*" * 300)
-    print("-" * 500)
+    # with open("after_collate.pkl", 'wb') as f:
+    #     pickle.dump(sample_batch, f)
+
+    # print("Now after_collate Log")
+    # for key, value in sample_batch.items():
+    #     print("*" * 300)
+    #     print("Key:", key)
+    #     if hasattr(value, "shape"):
+    #         print("Value Shape:", value.shape)
+    #     else:
+    #         print("Value", value)
+    #     print("*" * 300)
+    # print("-" * 500)
 
 
 if __name__ == "__main__":
