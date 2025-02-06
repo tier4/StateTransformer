@@ -38,16 +38,13 @@ def save_channels_as_png(rasterized_map, output_dir):
         cv2.imwrite(output_path, channel_image)
         print(f"チャンネル '{channel_name}' を保存しました: {output_path}")
 
-def rasterize_map(osm_file, ego_x, ego_y, distance, resolution):
+def rasterize_map(osm_file, ego_x, ego_y, num_pixels=224, range_m=50):
     # OSMファイルをロード
     projector = UtmProjector(Origin(35.0, 139.0))  # 適切な原点を設定してください
     lanelet_map = load(osm_file, projector)
 
     # Egoエージェントの位置を中心としたバウンディングボックスを定義
     ego_position = BasicPoint2d(ego_x, ego_y)
-    min_point = BasicPoint2d(ego_x - distance, ego_y - distance)
-    max_point = BasicPoint2d(ego_x + distance, ego_y + distance)
-    bounding_box = BoundingBox2d(min_point, max_point)
 
     # バウンディングボックス内のレーンレットを取得
     #laneletlayers = lanelet_map.laneletLayer.search(bounding_box)
@@ -58,10 +55,8 @@ def rasterize_map(osm_file, ego_x, ego_y, distance, resolution):
     pointlayers = lanelet_map.pointLayer
     regulatoryelementslayers = lanelet_map.regulatoryElementLayer
 
+    height, width = num_pixels, num_pixels
 
-    # 出力画像のサイズを計算
-    width = int(2 * distance / resolution)
-    height = int(2 * distance / resolution)
 
     # 各チャンネルの初期化
     ego_road_channel = np.zeros((height, width), dtype=np.uint8)
@@ -70,13 +65,30 @@ def rasterize_map(osm_file, ego_x, ego_y, distance, resolution):
     traffic_light_channel = np.zeros((height, width), dtype=np.uint8)
     regulatory_element_channel = np.zeros((height, width), dtype=np.uint8)
     right_of_way_channel = np.zeros((height, width), dtype=np.uint8)
+    
+    def world_to_image(point, ego_yaw=np.pi/2):
+    # 自車両基準の相対座標
+        dx = point.x - ego_x
+        dy = point.y - ego_y
 
-    # 座標変換のヘルパー関数
-    def world_to_image(point):
-        x_img = int((point.x - ego_x) / resolution)
-        y_img = int((point.y - ego_y) / resolution)
-        #print(point.x - ego_x, point.y - ego_y)
-        return x_img + int(height / 2), int(height / 2) - y_img  # 画像座標系はy軸が下向きのため
+        # 回転行列を適用 (ego_yaw の逆回転)
+        cos_theta = np.cos(-ego_yaw)
+        sin_theta = np.sin(-ego_yaw)
+
+        # 回転行列適用 (自車両が常に上を向くようにする)
+        x_rot = cos_theta * dx - sin_theta * dy
+        y_rot = sin_theta * dx + cos_theta * dy
+
+        # 正規化（ワールド座標 -> [0, 1] のスケール）
+        x_norm = (x_rot + range_m) / (2 * range_m)
+        y_norm = (y_rot + range_m) / (2 * range_m)
+
+        # 画像座標に変換
+        x_img = int(x_norm * width)
+        y_img = int(y_norm * height)
+
+        # 画像のY座標は上下が反転しているため補正
+        return x_img, height - y_img
 
     ego_point_2d = lanelet2.core.BasicPoint2d(ego_x, ego_y)
 
@@ -222,9 +234,9 @@ if __name__ == '__main__':
 
     ego_x, ego_y = 71189.87418541731, 67461.40287274867
 
-    raster_data = rasterize_map(osm_file, ego_x, ego_y, distance=500, resolution=0.2)
+    raster_data = rasterize_map(osm_file, ego_x, ego_y, num_pixels=224, range_m=500)
     print("raster_data.shape =", raster_data.shape)
     print(f"max: {np.max(raster_data)}, min: {np.min(raster_data)}")
 
-    output_dir = "output_channels"
+    output_dir = "output_dir"
     save_channels_as_png(raster_data, output_dir)
