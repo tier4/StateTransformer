@@ -620,7 +620,7 @@ class PlanningTrainer(Trainer):
             return None, None, None
 
         # if val14, run closed loop simulation instead
-        if inputs['split'][0] == 'val_141k':
+        if 'split' in inputs and inputs['split'][0] == 'val_141k':
             overall_score_dic = self.do_closed_loop_simulation(inputs)
             loss = torch.tensor(0, device=self.model.device)
             logits_dict = overall_score_dic
@@ -701,7 +701,7 @@ class PlanningTrainer(Trainer):
             "loss_items": loss_items if loss_items is not None else 0,
         }
 
-        if self.model.config.task == "nuplan":
+        if self.model.config.task == "nuplan" and False:
             if 't0_frame_id' not in inputs or inputs['t0_frame_id'][0] == -1:
                 # val14 without 15s in the future
                 t0_frame_id = inputs["frame_id"]

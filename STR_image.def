@@ -59,14 +59,14 @@ From: nvidia/cuda:11.1.1-cudnn8-devel-ubuntu20.04
     && python3.9 get-pip.py \
     && rm get-pip.py
 
-    pip install torch torchvision torchaudio
-    cd StateTransformer
+    cd STR2
     pip install pip==24.0
+    pip install torch torchvision torchaudio
     pip install -r ./requirements.txt
     pip install git+https://github.com/motional/nuplan-devkit.git
     pip install -e .
     pip install waymo-open-dataset-tf-2-11-0==1.6.0
-
+    pip install --upgrade transformers huggingface_hub
     
     chmod -R 777 ./
     chmod -R 777 /root/

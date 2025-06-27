@@ -209,7 +209,6 @@ class STR(PreTrainedModel):
         return_dict = return_dict if return_dict is not None else self.config.use_return_dict
         if not return_dict:
             raise NotImplementedError('need to return dict for evaluations in trainer.py')
-
         input_embeds, info_dict = self.encoder(is_training=self.training, **kwargs)
         transformer_outputs = self.embedding_to_hidden(input_embeds, return_dict=return_dict)
         transformer_outputs_hidden_state = transformer_outputs['last_hidden_state']
@@ -492,6 +491,7 @@ class STR(PreTrainedModel):
                 route_ids = kwargs.get("route_ids", None)
                 ego_pose = kwargs.get("ego_pose", None)
                 road_dic = kwargs.get("road_dic", None)
+                pred_length = info_dict["pred_length"]
 
                 trajectory_label_dummy = torch.zeros((batch_size, pred_length, 4), device=device)
                 if 'specified' in self.use_key_points:
