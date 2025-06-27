@@ -21,8 +21,16 @@ autoware/
 - `inference.py`: 推論用のスクリプト(データセットからのデータを読み込んで推論を行うものです，旧バージョン)
 - `train.sh`: 学習用のコード
 - `train.py`: 学習用のスクリプト
+- `requirements.txt`: 依存パッケージのリスト
 
 ### 使い方
+- 仮想環境のセットアップ
+    ```bash
+    uv venv -p 3.12
+    source .venv/bin/activate
+    uv pip install -r requirements.txt
+    uv pip install -e ../
+    ```
 
 - データセットの作成
 

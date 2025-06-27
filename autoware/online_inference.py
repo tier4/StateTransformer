@@ -1,5 +1,4 @@
 import sys
-sys.path.append("/home/acf15382lp/projects/STR2/rasterize_wrapper")
 sys.path.append("/home/acf15382lp/projects/Autoware-Python-ROSBAG-Loader")
 from rasterize_wrapper.rasterize_online import RasterizeWrapper
 import numpy as np
@@ -238,7 +237,7 @@ def create_online_dataset(osm_file_path, db_path):
 def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     osm_file_path = "/home/acf15382lp/projects/datasets/lanelet2_map.osm"
-    db_path = "/home/acf15382lp/Downloads/rosbag-data/34434667-2a91-4b84-b5f2-d68b46d04f46"
+    db_path = "/home/acf15382lp/Downloads/rosbag-data/a04aec41-5ea7-41f9-952e-ecb2fbdf24d4"
     dataset, axes = create_online_dataset(osm_file_path, db_path)
     print(dataset)
 
@@ -246,7 +245,7 @@ def main():
 
     dataloader = DataLoader(dataset, batch_size=16, collate_fn=collator, shuffle=False)
 
-    path = "/groups/gcd50654/tier4/kai-yamashita/full-scratch-mixtral-800m/output/checkpoint-5000"
+    path = "/groups/gcd50654/tier4/kai-yamashita/latest-scratch-mixtral-800m/output/checkpoint-5000"
     model = build_model_from_path(model_path=path)
     model = model.from_pretrained(path)
     model.eval()
