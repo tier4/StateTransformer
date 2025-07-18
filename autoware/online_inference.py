@@ -20,6 +20,8 @@ import io
 # figureの警告を抑制し、メモリ使用量を制御
 matplotlib.rcParams['figure.max_open_warning'] = 50  # 警告の閾値を上げる
 
+VISUALIZE_MODE = "matplotlib" # "rasterize" or "matplotlib"
+
 def visualize_output(inputs, outputs, j):
     """
     Rasterize形式での可視化を行う関数
@@ -116,7 +118,7 @@ def matplotlib_to_pil_image(ax: plt.Axes) -> Image.Image:
     # canvasのバッファからRGBデータを取得
     buf = io.BytesIO()
     fig.savefig(buf, format='png')
-    plt.close(fig)
+    # plt.close(fig)  # ここでfigureを閉じないように修正
     buf.seek(0)
     img = Image.open(buf).convert("RGB")
     
@@ -141,13 +143,13 @@ def visualize_matplotlib(inputs, outputs, ax: plt.Axes, j):
         x_coords = []
         y_coords = []
 
-        for x, y in zip(x, y):
-            dx = x
-            dy = y
+        for s, t in zip(x, y):
+            dx = s
+            dy = t
 
             # 回転行列適用 (自車両が常に上を向くようにする)
-            x_rot = x
-            y_rot = y
+            x_rot = dx
+            y_rot = dy
 
             # 正規化（ワールド座標 -> [0, 1] のスケール）
             x_norm = (x_rot + range_m) / (2 * range_m)
@@ -193,6 +195,7 @@ def create_online_dataset(osm_file_path, db_path):
             fig, ax = plt.subplots(figsize=(8, 8), dpi=100)
             ax.set_xlim(0, 800)
             ax.set_ylim(0, 800)
+            ax.set_aspect('equal')
             dummy_fig, dummy_ax = plt.subplots(figsize=(8, 8), dpi=100)
             high_res_range_m = 10
             low_res_range_m = 30
@@ -223,6 +226,7 @@ def create_online_dataset(osm_file_path, db_path):
             plt.close(dummy_fig)
             
             i += 1
+            print(f"i: {i}")
 
             datas.append(data)
             axes.append(ax)
@@ -239,11 +243,12 @@ def main():
     osm_file_path = "/home/acf15382lp/projects/datasets/lanelet2_map.osm"
     db_path = "/home/acf15382lp/Downloads/rosbag-data/a04aec41-5ea7-41f9-952e-ecb2fbdf24d4"
     dataset, axes = create_online_dataset(osm_file_path, db_path)
+    print(f"len(dataset): {len(dataset)}, len(axes): {len(axes)}")
     print(dataset)
 
     collator = AutowareCollator(device=device)
 
-    dataloader = DataLoader(dataset, batch_size=16, collate_fn=collator, shuffle=False)
+    dataloader = DataLoader(dataset, batch_size=1, collate_fn=collator, shuffle=False)
 
     path = "/groups/gcd50654/tier4/kai-yamashita/latest-scratch-mixtral-800m/output/checkpoint-5000"
     model = build_model_from_path(model_path=path)
@@ -252,23 +257,21 @@ def main():
     model.to(device)
 
     frames = []
-    i = 0
 
-    for batch in tqdm(dataloader, desc="Generating frames"):
+    for i, batch in tqdm(enumerate(dataloader), desc="Generating frames"):
         with torch.no_grad():
             outputs = model.forward(**batch)
-        print(len(batch))
-        for j in range(len(batch)):
-            ax = visualize_matplotlib(batch, outputs["pred_dict"], axes[i], j)
-            # frame = visualize_output(batch, outputs["pred_dict"], j)
-            frame = matplotlib_to_pil_image(ax)
-            frames.append(frame)
+        if VISUALIZE_MODE == "rasterize":
+            frame = visualize_output(batch, outputs["pred_dict"], j)
+        elif VISUALIZE_MODE == "matplotlib":
+            ax_current = visualize_matplotlib(batch, outputs["pred_dict"], axes[i], 0)
+            frame = matplotlib_to_pil_image(copy.deepcopy(ax_current))
+        else:
+            raise NotImplementedError(f"VISUALIZE_MODE: {VISUALIZE_MODE} is not implemented")
+        frames.append(frame)
+        plt.close(axes[i].figure)
         
-            # figureを閉じてメモリを解放
-            plt.close(axes[i].figure)
-            i += 1
-        
-    frames[0].save("output.gif", save_all=True, append_images=frames[1:], duration=200, loop=0)
+    frames[0].save(f"{VISUALIZE_MODE}.gif", save_all=True, append_images=frames[1:], duration=200, loop=0)
 
         
 
