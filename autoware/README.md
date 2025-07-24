@@ -24,7 +24,28 @@ autoware/
 - `requirements.txt`: 依存パッケージのリスト
 
 ### 使い方
-- 仮想環境のセットアップ
+
+#### 方法1: Docker を使用した環境構築（推奨）
+
+- **Dockerイメージのビルド**
+    ```bash
+    docker build -t str2-autoware .
+    ```
+
+- **コンテナの実行**
+    ```bash
+    # 開発用（インタラクティブ）
+    docker run --gpus all -it -v $(pwd)/..:/workspace/STR2 str2-autoware
+    ```
+
+**Docker使用の要件:**
+- NVIDIA Docker Runtime
+- CUDA対応GPU
+- Docker 19.03以降
+
+#### 方法2: 仮想環境のセットアップ（手動）
+
+- **仮想環境の作成とパッケージインストール**
     ```bash
     uv venv -p 3.12
     source .venv/bin/activate
